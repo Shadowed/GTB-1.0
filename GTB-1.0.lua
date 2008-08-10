@@ -418,7 +418,7 @@ end
 
 -- Sets the max number of bars that can show up in this group
 function GTB.SetMaxBars(group, max)
-	argcheck(max, 2, "number")
+	argcheck(max, 2, "number", "nil")
 	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "EnableGradient"))
 	
 	group.maxBars = max
@@ -430,7 +430,7 @@ function GTB.SetPoint(group, ...)
 	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetPoint"))
 			
 	group.frame:ClearAllPoints()
-	group.frame:SetPoint(point, ...)
+	group.frame:SetPoint(...)
 end
 
 -- Bar scale
