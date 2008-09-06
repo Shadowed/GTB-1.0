@@ -1,5 +1,5 @@
 local major = "GTB-1.0"
-local minor = tonumber(string.match("$Revision: 843 $", "(%d+)") or 1)
+local minor = tonumber(string.match("$Revision: 900 $", "(%d+)") or 1)
 
 assert(LibStub, string.format("%s requires LibStub.", major))
 
@@ -41,7 +41,7 @@ GTB.groups = GTB.groups or {}
 
 local framePool = GTB.framePool
 local groups = GTB.groups
-local methods = {"RegisterOnMove", "SetAnchorVisible", "SetMaxBars", "SetBaseColor", "EnableGradient", "SetPoint", "SetScale", "SetWidth", "SetTexture", "SetBarGrowth", "SetIconPosition",
+local methods = {"RegisterOnMove", "SetAnchorVisible", "SetMaxBars", "SetBaseColor", "EnableGradient", "SetFont", "SetPoint", "SetScale", "SetWidth", "SetTexture", "SetBarGrowth", "SetIconPosition",
 "SetFadeTime", "RegisterOnFade", "RegisterOnClick", "SetDisplayGroup", "GetDisplayGroup", "RegisterBar", "UnregisterBar", "SetRepeatingTimer", "UnregisterAllBars", "SetBarIcon"}
 
 -- Internal functions for managing bars
@@ -442,6 +442,29 @@ function GTB.SetScale(group, scale)
 	group.frame:SetScale(scale)
 end
 
+-- Set font/font size
+function GTB.SetFont(group, path, size, style)
+	argcheck(path, 2, "string")
+	argcheck(size, 3, "number")
+	argcheck(style, 4, "string", "nil")
+	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetFont"))
+	
+	group.fontSize = size
+	group.fontPath = path
+	group.fontStyle = style
+	
+	-- Update running bars
+	local path, size, style = GameFontHighlight:GetFont()
+	path = group.fontPath or path
+	style = group.fontStyle or style
+	size = group.fontSize or size
+
+	for _, bar in pairs(group.bars) do
+		frame.timer:SetFont(path, size, style)
+		frame.text:SetFont(path, size, style)
+	end
+end
+
 -- Width of all the bars
 function GTB.SetWidth(group, width)
 	argcheck(width, 2, "number")
@@ -573,6 +596,8 @@ function GTB.RegisterBar(group, id, text, seconds, startSeconds, icon, r, g, b)
 
 	-- Grab basic info about the font
 	local path, size, style = GameFontHighlight:GetFont()
+	path = group.fontPath or path
+	style = group.fontStyle or style
 	size = group.fontSize or size
 	
 	-- Timer text
