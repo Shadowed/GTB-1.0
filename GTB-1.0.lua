@@ -460,8 +460,8 @@ function GTB.SetFont(group, path, size, style)
 	size = group.fontSize or size
 
 	for _, bar in pairs(group.bars) do
-		frame.timer:SetFont(path, size, style)
-		frame.text:SetFont(path, size, style)
+		bar.timer:SetFont(path, size, style)
+		bar.text:SetFont(path, size, style)
 	end
 end
 
