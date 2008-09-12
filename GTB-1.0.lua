@@ -1,5 +1,5 @@
 local major = "GTB-1.0"
-local minor = tonumber(string.match("$Revision: 900 $", "(%d+)") or 1)
+local minor = tonumber(string.match("$Revision: 910 $", "(%d+)") or 1)
 
 assert(LibStub, string.format("%s requires LibStub.", major))
 
@@ -118,7 +118,7 @@ local function fadeOnUpdate(self, elapsed)
 
 	-- Done fading, hide
 	if( self.fadeTime <= 0 ) then
-		groups[self.owner]:UnregisterBar(self.barID)
+		groups[self.owner]:UnregisterBar(self.barID, true)
 		triggerFadeCallback(groups[self.originalOwner], self.barID)
 		return
 	end
@@ -132,7 +132,7 @@ local function fadeoutBar(self)
 	
 	-- Don't fade at all, remove right now
 	if( group.fadeTime <= 0 ) then
-		group:UnregisterBar(self.barID)	
+		group:UnregisterBar(self.barID, true)	
 		triggerFadeCallback(groups[self.originalOwner])
 		return
 	end
@@ -321,7 +321,7 @@ function GTB:RegisterGroup(name, texture)
 	
 	obj:SetScale(1.0)
 	obj:SetWidth(200)
-	obj:SetFadeTime(0.25)
+	obj:SetFadeTime(0.10)
 	obj:SetMaxBars(nil)
 	obj:EnableGradient(true)
 	obj:SetAnchorVisible(true)
@@ -585,7 +585,7 @@ function GTB.RegisterBar(group, id, text, seconds, startSeconds, icon, r, g, b)
 	
 	-- Already exists, remove the old one quickly
 	if( group.bars[id] ) then
-		group:UnregisterBar(id)
+		group:UnregisterBar(id, true)
 	end
 
 	-- Retrieve a frame thats either recycled, or a newly created one
@@ -706,7 +706,7 @@ function GTB.UnregisterAllBars(group)
 end
 
 -- Unregistering
-function GTB.UnregisterBar(group, id)
+function GTB.UnregisterBar(group, id, noFade)
 	argcheck(id, 2, "string", "number")
 	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "UnregisterBar"))
 	
@@ -723,14 +723,20 @@ function GTB.UnregisterBar(group, id)
 	-- Remove from list of used bars
 	for i=#(group.usedBars), 1, -1 do
 		if( group.usedBars[i].barID == id ) then
-			table.remove(group.usedBars, i)
+			if( noFade or group.fadeTime <= 0 ) then
+				table.remove(group.usedBars, i)
+			else
+				fadeoutBar(group.usedBars[i])
+			end
 			break
 		end
 	end
 
-	releaseFrame(group.bars[id])
-	repositionFrames(group)
-	group.bars[id] = nil
+	if( noFade or group.fadeTime <= 0 ) then
+		releaseFrame(group.bars[id])
+		repositionFrames(group)
+		group.bars[id] = nil
+	end
 	
 	return true
 end
