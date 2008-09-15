@@ -1,5 +1,5 @@
 local major = "GTB-1.0"
-local minor = tonumber(string.match("$Revision: 910 $", "(%d+)") or 1)
+local minor = tonumber(string.match("$Revision: 950 $", "(%d+)") or 1)
 
 assert(LibStub, string.format("%s requires LibStub.", major))
 
@@ -42,7 +42,7 @@ GTB.groups = GTB.groups or {}
 local framePool = GTB.framePool
 local groups = GTB.groups
 local methods = {"RegisterOnMove", "SetAnchorVisible", "SetMaxBars", "SetBaseColor", "EnableGradient", "SetFont", "SetPoint", "SetScale", "SetWidth", "SetTexture", "SetBarGrowth", "SetIconPosition",
-"SetFadeTime", "RegisterOnFade", "RegisterOnClick", "SetDisplayGroup", "GetDisplayGroup", "RegisterBar", "UnregisterBar", "SetRepeatingTimer", "UnregisterAllBars", "SetBarIcon"}
+"SetFadeTime", "SetBackgroundColor", "RegisterOnFade", "RegisterOnClick", "SetDisplayGroup", "GetDisplayGroup", "RegisterBar", "UnregisterBar", "SetRepeatingTimer", "UnregisterAllBars", "SetBarIcon"}
 
 -- Internal functions for managing bars
 local function getFrame()
@@ -329,6 +329,7 @@ function GTB:RegisterGroup(name, texture)
 	obj:SetIconPosition("LEFT")
 	obj:SetTexture(texture)
 	obj:SetBaseColor(0.0, 1.0, 0.0)
+	obj:SetBackgroundColor(nil, nil, nil)
 	obj:SetPoint("CENTER", UIParent, "CENTER")
 	
 	return obj	
@@ -513,9 +514,9 @@ end
 
 -- Group object
 function GTB.SetBaseColor(group, r, g, b)
-	argcheck(r, 2, "number")
-	argcheck(g, 3, "number")
-	argcheck(b, 4, "number")
+	argcheck(r, 2, "number", "nil")
+	argcheck(g, 3, "number", "nil")
+	argcheck(b, 4, "number", "nil")
 	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetBaseColor"))
 	
 	if( not group.baseColor ) then
@@ -525,6 +526,21 @@ function GTB.SetBaseColor(group, r, g, b)
 	group.baseColor.r = r
 	group.baseColor.g = g
 	group.baseColor.b = b
+end
+
+function GTB.SetBackgroundColor(group, r, g, b)
+	argcheck(r, 2, "number", "nil")
+	argcheck(g, 3, "number", "nil")
+	argcheck(b, 4, "number", "nil")
+	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetBackgroundColor"))
+	
+	if( not group.bgColor ) then
+		group.bgColor = {}
+	end
+	
+	group.bgColor.r = r
+	group.bgColor.g = g
+	group.bgColor.b = b
 end
 
 -- How many seconds we should take to fade out
@@ -662,10 +678,15 @@ function GTB.RegisterBar(group, id, text, seconds, startSeconds, icon, r, g, b)
 		
 	-- Setup background
 	frame.bg:SetStatusBarTexture(group.texture)
-	frame.bg:SetStatusBarColor(0.0, 0.5, 0.5, 0.5)
 	frame.bg:SetWidth(group.width)
 	frame.bg:SetHeight(group.height)
 	
+	if( group.bgColor ) then
+		frame.bg:SetStatusBarColor(group.bgColor.r or 0.0, group.bgColor.g or 0.5, group.bgColor.b or 0.5, 0.5)
+	else
+		frame.bg:SetStatusBarColor(0.0, 0.5, 0.5, 0.5)
+	end
+
 	-- Start it up
 	frame:SetStatusBarTexture(group.texture)
 	frame:SetStatusBarColor(frame.r, frame.g, frame.b)
