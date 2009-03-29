@@ -66,12 +66,6 @@ local function getFrame()
 	-- Create icon
 	frame.icon = frame:CreateTexture(nil, "ARTWORK")
 	
-	-- Sparky
-	frame.spark = frame:CreateTexture(nil, "OVERLAY")
-	frame.spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
-	frame.spark:SetWidth(16)
-	frame.spark:SetBlendMode("ADD")
-	
 	-- Timer text
 	frame.timer = frame:CreateFontString(nil, "OVERLAY")
 	frame.timer:SetFontObject(GameFontHighlight)
@@ -158,9 +152,7 @@ local function barOnUpdate(self)
 			return
 		end
 		
-		
 		self:SetValue(0)
-		self.spark:Hide()
 		
 		fadeoutBar(self)
 		return
@@ -190,12 +182,10 @@ local function barOnUpdate(self)
 		-- finalColor + (currentColor - finalColor) * percentLeft		
 		self:SetStatusBarColor(1.0 + (self.r - 1.0) * percent, self.g * percent, self.b * percent)
 	end
-	
-	-- Spark position
-	self.spark:SetPoint("CENTER", self, "LEFT", self:GetWidth() * percent, 0)
 
 	-- Now update the actual displayed bar
 	self:SetValue(percent)
+	self.text:SetWidth(self:GetWidth() - self.timer:GetWidth() - 5)
 end
 
 -- Reposition the group
@@ -607,7 +597,7 @@ function GTB.RegisterBar(group, id, text, seconds, startSeconds, icon, r, g, b)
 	argcheck(g, 8, "number", "nil")
 	argcheck(b, 9, "number", "nil")
 	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "RegisterBar"))
-	
+		
 	local originalOwner = group.name
 	
 	-- Check if we're supposed to redirect this to another group, and that the group exists
@@ -625,35 +615,16 @@ function GTB.RegisterBar(group, id, text, seconds, startSeconds, icon, r, g, b)
 		
 	-- So we can do sorting and positioning
 	table.insert(group.usedBars, frame)
-
-	-- Grab basic info about the font
-	local path, size, style = GameFontHighlight:GetFont()
-	path = group.fontPath or path
-	style = group.fontStyle or style
-	size = group.fontSize or size
 	
-	-- Timer text
-	local timerTextWidth = size * 3.6
-	
-	frame.timer:SetPoint("LEFT", frame, "LEFT", 0, 0)
-	frame.timer:SetFont(path, size, style)
+	frame.timer:SetPoint("RIGHT", frame, "RIGHT", -1, 0)
 	frame.timer:SetText(seconds)
-
 	frame.timer:SetHeight(group.height)
-	frame.timer:SetWidth(timerTextWidth)
 	
-	-- Display text
-	frame.text:SetPoint("RIGHT", frame, "RIGHT", 0, 0)
-	frame.text:SetFont(path, size, style)
-	frame.text:SetText(text)
-
+	frame.text:SetPoint("LEFT", frame, "LEFT", 1, 0)
 	frame.text:SetHeight(group.height)
-	frame.text:SetWidth((group.width - timerTextWidth) * 0.90)
-	
-	-- Timer spark
-	frame.spark:SetHeight(group.height + 25)
-	frame.spark:Show()
-	
+	frame.text:SetWidth(group.width - frame.timer:GetWidth() - 5)
+	frame.text:SetText(text)
+		
 	-- Update icon
 	if( icon ) then
 		frame.icon:SetTexture(icon)
