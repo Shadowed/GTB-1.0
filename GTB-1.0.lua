@@ -342,8 +342,7 @@ end
 
 -- Set a unique ID for this group
 function GTB.SetGroupID(group, id)
-	argcheck(name, 1, "string")
-	argcheck(id, 1, "string")
+	argcheck(id, 2, "string")
 	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetGroupID")
 	
 	group.frame.groupID = id	
