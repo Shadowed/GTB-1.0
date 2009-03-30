@@ -15,9 +15,9 @@ local L = {
 }
 
 -- Validation for passed arguments
-local function assert(level,condition,message)
+local function assert(level, condition, message, ...)
 	if( not condition ) then
-		error(message,level)
+		error(string.format(message, ...), level)
 	end
 end
 
@@ -41,7 +41,7 @@ GTB.groups = GTB.groups or {}
 
 local framePool = GTB.framePool
 local groups = GTB.groups
-local methods = {"RegisterOnMove", "SetAnchorVisible", "SetMaxBars", "SetBaseColor", "EnableGradient", "SetFont", "SetPoint", "SetScale", "SetWidth", "SetTexture", "SetBarGrowth", "SetIconPosition",
+local methods = {"RegisterOnMove", "SetAnchorVisible", "SetGroupID", "SetMaxBars", "SetBaseColor", "EnableGradient", "SetFont", "SetPoint", "SetScale", "SetWidth", "SetTexture", "SetBarGrowth", "SetIconPosition",
 "SetFadeTime", "SetBackgroundColor", "RegisterOnFade", "RegisterOnClick", "SetDisplayGroup", "GetDisplayGroup", "RegisterBar", "UnregisterBar", "SetRepeatingTimer", "UnregisterAllBars", "SetBarIcon"}
 
 -- Internal functions for managing bars
@@ -274,7 +274,7 @@ end
 function GTB:RegisterGroup(name, texture)
 	argcheck(name, 1, "string")
 	argcheck(texture, 2, "string")
-	assert(3, not groups[name], string.format(L["GROUP_EXISTS"], name))
+	assert(3, not groups[name], L["GROUP_EXISTS"], name)
 
 	local obj = {name = name, frame = CreateFrame("Frame", nil, UIParent), fontSize = 11, height = 16, obj = obj, bars = {}, usedBars = {}}
 	
@@ -340,8 +340,18 @@ end
 ----- MISC ------
 -----------------
 
+-- Set a unique ID for this group
+function GTB.SetGroupID(group, id)
+	argcheck(name, 1, "string")
+	argcheck(id, 1, "string")
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetGroupID")
+	
+	group.frame.groupID = id	
+end
+
+-- Toggle if the drag anchor should be shown
 function GTB.SetAnchorVisible(group, flag)
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetAnchorVisible"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetAnchorVisible")
 	
 	group.anchorShown = flag
 	
@@ -402,7 +412,7 @@ end
 -- Gradients from base color -> red depending on time left
 function GTB.EnableGradient(group, flag)
 	argcheck(flag, 2, "boolean")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "EnableGradient"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "EnableGradient")
 	
 	group.gradients = flag
 end
@@ -410,7 +420,7 @@ end
 -- Sets the max number of bars that can show up in this group
 function GTB.SetMaxBars(group, max)
 	argcheck(max, 2, "number", "nil")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "EnableGradient"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "EnableGradient")
 	
 	group.maxBars = max
 	repositionFrames(group)
@@ -418,7 +428,7 @@ end
 
 -- Group frame positioning, and all the timers inside it
 function GTB.SetPoint(group, ...)
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetPoint"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetPoint")
 			
 	group.frame:ClearAllPoints()
 	group.frame:SetPoint(...)
@@ -427,7 +437,7 @@ end
 -- Bar scale
 function GTB.SetScale(group, scale)
 	argcheck(scale, 2, "number")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetScale"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetScale")
 	
 	group.scale = scale
 	group.frame:SetScale(scale)
@@ -442,7 +452,7 @@ function GTB.SetFont(group, path, size, style)
 	argcheck(path, 2, "string")
 	argcheck(size, 3, "number")
 	argcheck(style, 4, "string", "nil")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetFont"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetFont")
 	
 	group.fontSize = size
 	group.fontPath = path
@@ -463,7 +473,7 @@ end
 -- Width of all the bars
 function GTB.SetWidth(group, width)
 	argcheck(width, 2, "number")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetWidth"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetWidth")
 	
 	group.width = width
 	group.frame:SetWidth(width + group.height)
@@ -478,7 +488,7 @@ end
 -- Bar texture
 function GTB.SetTexture(group, texture)
 	argcheck(texture, 2, "string")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetTexture"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetTexture")
 	
 	group.texture = texture
 	
@@ -490,7 +500,7 @@ end
 
 -- Bar growth mode (UP/DOWN)
 function GTB.SetBarGrowth(group, type)
-	assert(3, type == "UP" or type == "DOWN", string.format(L["BAD_ARGUMENT"], 2, "SetBarGrowth", "UP, DOWN", tostring(type)))
+	assert(3, type == "UP" or type == "DOWN", L["BAD_ARGUMENT"], 2, "SetBarGrowth", "UP, DOWN", tostring(type))
 	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetBarGrowth"))
 	
 	group.barGrowth = type
@@ -500,7 +510,7 @@ end
 
 -- Icon positioning (LEFT/RIGHT)
 function GTB.SetIconPosition(group, position)
-	assert(3, position == "LEFT" or position == "RIGHT", string.format(L["BAD_ARGUMENT"], 2, "SetIconPosition", "LEFT, RIGHT", tostring(position)))
+	assert(3, position == "LEFT" or position == "RIGHT", L["BAD_ARGUMENT"], 2, "SetIconPosition", "LEFT, RIGHT", tostring(position))
 	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetIconPosition"))
 	
 	group.iconPosition = position
@@ -511,7 +521,7 @@ function GTB.SetBaseColor(group, r, g, b)
 	argcheck(r, 2, "number", "nil")
 	argcheck(g, 3, "number", "nil")
 	argcheck(b, 4, "number", "nil")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetBaseColor"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetBaseColor")
 	
 	if( not group.baseColor ) then
 		group.baseColor = {}
@@ -530,7 +540,7 @@ function GTB.SetBackgroundColor(group, r, g, b)
 	argcheck(r, 2, "number", "nil")
 	argcheck(g, 3, "number", "nil")
 	argcheck(b, 4, "number", "nil")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetBackgroundColor"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetBackgroundColor")
 	
 	if( not group.bgColor ) then
 		group.bgColor = {}
@@ -552,7 +562,7 @@ end
 -- How many seconds we should take to fade out
 function GTB.SetFadeTime(group, seconds)
 	argcheck(seconds, 2, "number")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetFadeTime"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetFadeTime")
 	
 	group.fadeTime = seconds
 end
@@ -560,7 +570,7 @@ end
 -- Redirect everything to the specified group
 function GTB.SetDisplayGroup(group, name)
 	argcheck(name, 2, "string", "nil")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetDisplayGroup"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetDisplayGroup")
 	
 	-- Don't allow setting the group to redirect to itself
 	if( name == "" or name == group.name ) then
@@ -577,7 +587,7 @@ end
 
 -- Gets the current display group
 function GTB.GetDisplayGroup(group)
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "GetDisplayGroup"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "GetDisplayGroup")
 	
 	return group.redirectTo
 end
@@ -596,7 +606,7 @@ function GTB.RegisterBar(group, id, text, seconds, startSeconds, icon, r, g, b)
 	argcheck(r, 7, "number", "nil")
 	argcheck(g, 8, "number", "nil")
 	argcheck(b, 9, "number", "nil")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "RegisterBar"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "RegisterBar")
 		
 	local originalOwner = group.name
 	
@@ -694,7 +704,7 @@ end
 
 -- Remove all bars
 function GTB.UnregisterAllBars(group)
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "UnregisteRAllBars"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "UnregisteRAllBars")
 	
 	-- Check if we're supposed to redirect this to another group, and that the group exists
 	if( group.redirectTo and groups[group.redirectTo] ) then
@@ -719,7 +729,7 @@ end
 -- Unregistering
 function GTB.UnregisterBar(group, id, noFade)
 	argcheck(id, 2, "string", "number")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "UnregisterBar"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "UnregisterBar")
 	
 	-- Check if we're supposed to redirect this to another group, and that the group exists
 	if( group.redirectTo and groups[group.redirectTo] ) then
@@ -760,7 +770,7 @@ function GTB.SetBarIcon(group, id, icon, left, right, top, bottom)
 	argcheck(right, 5, "number", "nil")
 	argcheck(top, 6, "number", "nil")
 	argcheck(bottom, 7, "number", "nil")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetBarIcon"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetBarIcon")
 	
 	-- Check if we're supposed to redirect this to another group, and that the group exists
 	if( group.redirectTo and groups[group.redirectTo] ) then
@@ -799,7 +809,7 @@ end
 function GTB.SetRepeatingTimer(group, id, flag)
 	argcheck(id, 2, "string", "number")
 	argcheck(flag, 3, "boolean")
-	assert(3, group.name and groups[group.name], string.format(L["MUST_CALL"], "SetRepeatingTimer"))
+	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetRepeatingTimer")
 
 	-- Check if we're supposed to redirect this to another group, and that the group exists
 	if( group.redirectTo and groups[group.redirectTo] ) then
