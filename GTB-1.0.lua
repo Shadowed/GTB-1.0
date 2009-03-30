@@ -345,7 +345,8 @@ function GTB.SetGroupID(group, id)
 	argcheck(id, 2, "string")
 	assert(3, group.name and groups[group.name], L["MUST_CALL"], "SetGroupID")
 	
-	group.frame.groupID = id	
+	group.frame.groupID = id
+	group.groupID = id
 end
 
 -- Toggle if the drag anchor should be shown
