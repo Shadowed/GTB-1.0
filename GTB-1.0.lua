@@ -146,7 +146,7 @@ local function barOnUpdate(self)
 	if( self.secondsLeft <= 0 ) then
 		-- Check if it's a repeating timer
 		local bar = groups[self.groupName].bars[self.barID]
-		if( bar.repeating ) then
+		if( bar and bar.repeating ) then
 			self.secondsLeft = self.startSeconds
 			self.lastUpdate = time
 			return
